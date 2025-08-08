@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="af">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Summer Splash: Lydende vs Bedrywende – Graad 4</title>
+  <style>
+    :root{
+      --sun:#FFD54F;
+      --ocean:#00B8D4;
+      --deep:#0097A7;
+      --sand:#FFE0B2;
+      --coral:#FF6F61;
+      --mint:#A7FFEB;
+      --grass:#81C784;
+      --sky:#E1F5FE;
+      --ink:#14323A;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:linear-gradient(var(--sky), var(--sand) 65%);}    
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Sans",sans-serif;color:var(--ink)}
+
+    /* Header / waves */
+    header{
+      position:relative;
+      padding:16px 20px 64px;
+      background:linear-gradient(180deg, var(--ocean), var(--deep));
+      color:white;overflow:hidden
+    }
+    .title-wrap{display:flex;align-items:center;gap:16px}
+    .sun{width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #fff6, #fff0), var(--sun);box-shadow:0 0 30px #ffc107aa,0 0 80px #ffc10766;animation:pulse 3s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+    .subtitle{opacity:.95;margin-top:4px}
+    .waves{position:absolute;left:0;right:0;bottom:-2px;height:80px;background:repeating-linear-gradient(90deg, #ffffff33 0 20px, #ffffff11 20px 40px);mask:radial-gradient(80px 16px at 40px 0, #0000 95%, #000 100%) left/80px 100% repeat-x;}
+    .wave-anim{position:absolute;left:-20%;right:-20%;bottom:0;height:40px;background:rgba(255,255,255,.45);filter:blur(4px);border-radius:50%;animation:wave 6s linear infinite}
+    .wave-anim:nth-child(2){animation-duration:8s;opacity:.6;height:50px}
+    .wave-anim:nth-child(3){animation-duration:10s;opacity:.35;height:60px}
+    @keyframes wave{0%{transform:translateX(-10%)}100%{transform:translateX(10%)}}
+
+    /* Game shell */
+    .shell{max-width:960px;margin:-48px auto 80px;background:#fff;border-radius:18px;box-shadow:0 12px 35px #0002;overflow:hidden}
+    .hud{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 18px;background:linear-gradient(90deg,var(--mint),#fff)}
+    .stat{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 2px #00000008}
+    .lives i{display:inline-block;width:18px;height:18px;background:var(--coral);mask:url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"%23fff\"><path d=\"M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41.81 4.5 2.09C12.59 4.81 14.26 4 16 4 18.5 4 20.5 6 20.5 8.5c0 3.78-3.4 6.86-8.05 11.54L12 21.35z\"/></svg>') center/contain no-repeat}
+
+    .progress{flex:1;height:14px;border-radius:999px;background:#0001;overflow:hidden;min-width:180px}
+    .bar{height:100%;width:0;background:linear-gradient(90deg,var(--grass),var(--ocean));transition:width .4s ease}
+
+    .scene{padding:22px}
+    .card{background:linear-gradient(#fff, #fefdf8);border:2px solid #0000000d;border-radius:16px;padding:18px;box-shadow:0 6px 16px #0001}
+    h2{margin:6px 0 10px}
+    .hint{font-style:italic;color:#2f4858;opacity:.9}
+    .q-area{margin-top:14px}
+
+    /* Buttons */
+    .btn{appearance:none;border:none;background:var(--ocean);color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;box-shadow:0 6px 0 var(--deep);transition:transform .05s}
+    .btn:active{transform:translateY(2px);box-shadow:0 4px 0 var(--deep)}
+    .btn.secondary{background:#fff;color:var(--ink);box-shadow:0 0 0 2px var(--deep) inset}
+
+    .option{display:block;margin:.5rem 0;padding:10px 12px;border-radius:12px;border:2px solid #00000015;cursor:pointer;background:#fff;transition:background .2s, transform .05s}
+    .option:hover{background:#f8ffff}
+
+    input[type=text]{width:100%;padding:10px 12px;border-radius:10px;border:2px solid #0000001a;font-size:16px}
+
+    .feedback{margin-top:12px;padding:12px;border-left:6px solid var(--grass);background:#a7ffeb33;border-radius:8px}
+    .feedback.bad{border-left-color:var(--coral);background:#ff6f6118}
+
+    /* Drag & drop */
+    .dnd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+    .bucket{min-height:120px;border:2px dashed #00000033;border-radius:12px;padding:10px;background:#fff}
+    .label{font-weight:700;margin-bottom:6px}
+    .chip{display:inline-block;margin:6px 6px 0 0;padding:8px 10px;border-radius:999px;background:#e3f2fd;border:2px solid #bbdefb;cursor:grab}
+    .bucket .chip{cursor:default}
+
+    /* Toast */
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none}
+    .toast.show{animation:toast 2s ease}
+    @keyframes toast{0%{opacity:0;transform:translate(-50%, 20px)}10%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-10px)}}
+
+    /* Confetti */
+    .confetti{position:fixed;inset:0;pointer-events:none}
+
+    /* End screen */
+    .center{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+    .medal{font-size:52px}
+
+    /* Tiny helper */
+    .muted{opacity:.7}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-wrap">
+      <div class="sun" aria-hidden="true"></div>
+      <div>
+        <h1>🏄‍♀️ Summer Splash: Lydende vs Bedrywende</h1>
+        <div class="subtitle">Graad 4 Afrikaans EAT • Strandtema • Punte, lewens en konfettime!</div>
+      </div>
+    </div>
+    <div class="waves"></div>
+    <div class="wave-anim"></div>
+    <div class="wave-anim"></div>
+    <div class="wave-anim"></div>
+  </header>
+
+  <div class="shell">
+    <div class="hud">
+      <div class="stat">⭐️ <b id="score">0</b> punte</div>
+      <div class="stat">🔥 Streep: <b id="streak">0</b></div>
+      <div class="stat lives">🏄‍♂️ Lewens: <span id="lives"></span></div>
+      <div class="progress" aria-label="vordering"><div class="bar" id="bar"></div></div>
+    </div>
+
+    <div class="scene">
+      <div class="card" id="card">
+        <!-- dynamic content goes here -->
+      </div>
+    </div>
+  </div>
+
+  <canvas class="confetti" id="confetti"></canvas>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    /*****************
+     * Utilities
+     *****************/
+    const $ = (sel, el=document) => el.querySelector(sel);
+    const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+
+    const SFX = (()=>{
+      let ctx; const ensure=()=> ctx||(ctx=new (window.AudioContext||window.webkitAudioContext)());
+      function beep(freq=880, dur=0.08){ensure(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sine'; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination); g.gain.setValueAtTime(.0001,ctx.currentTime); g.gain.exponentialRampToValueAtTime(.2,ctx.currentTime+0.01); g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+dur); o.start(); o.stop(ctx.currentTime+dur);}
+      return {correct(){beep(1046,.07); setTimeout(()=>beep(1318,.07),90)}, wrong(){beep(196,.12)}, click(){beep(660,.04)}};
+    })();
+
+    function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1800)}
+
+    // Confetti
+    const Confetti=(()=>{
+      const cnv=$('#confetti'); const ctx=cnv.getContext('2d'); let w,h,parts=[]; function resize(){w=cnv.width=innerWidth; h=cnv.height=innerHeight}
+      resize(); addEventListener('resize',resize);
+      function burst(x=w/2,y=h/3,count=120){for(let i=0;i<count;i++){parts.push({x,y, vx:(Math.random()-0.5)*6, vy:Math.random()*-5-1, r:3+Math.random()*4, c:`hsl(${Math.random()*360},90%,60%)`, a:1})}}
+      function tick(){ctx.clearRect(0,0,w,h); parts.forEach(p=>{p.vy+=0.08;p.x+=p.vx;p.y+=p.vy;p.a-=0.01;ctx.globalAlpha=Math.max(p.a,0); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();}); parts=parts.filter(p=>p.a>0); requestAnimationFrame(tick)} tick();
+      return {burst};
+    })();
+
+    /*****************
+     * Game state
+     *****************/
+    const state={idx:0, lives:3, score:0, streak:0};
+
+    const questions = [
+      // --- TRANSFORM: Active -> Passive (present)
+      {type:'transform', dir:'toPassive', af:'Die hond eet die wors.', enHint:'*Rewrite so the object becomes the subject; use **word** + **deur** + past participle.*', expected:'Die wors word deur die hond geëet.', wrong:"Onthou: Voorwerp word onderwerp; gebruik 'word' + 'deur' + ge-."},
+      {type:'transform', dir:'toPassive', af:'Die meisie skop die bal.', enHint:'*Make the object (bal) the new subject; keep present tense.*', expected:'Die bal word deur die meisie geskop.', wrong:'Gebruik **word** in die teenwoordige tyd en voeg **deur** by.'},
+      {type:'transform', dir:'toPassive', af:'Die seun dra die koelkas.', enHint:'*Object first; add **word** and **deur**.*', expected:'Die koelkas word deur die seun gedra.', wrong:'Plaas die voorwerp eerste: "Die koelkas" … **word** … **deur** …'},
+      {type:'transform', dir:'toPassive', af:'Die leerders bou ’n sandkasteel.', enHint:'*Use **word** and the ge- form of the verb.*', expected:'’n Sandkasteel word deur die leerders gebou.', wrong:"Gebruik 'word' + 'deur' + 'gebou'."},
+      {type:'transform', dir:'toPassive', af:'Mamma braai die worsies.', enHint:'*Present passive uses **word**.*', expected:'Die worsies word deur Mamma gebraai.', wrong:'Teenwoordige tyd: **word** + **deur** + ge-.'},
+
+      // --- TRANSFORM: Active -> Passive (past)
+      {type:'transform', dir:'toPassive', af:'Die redders het die kind gehelp.', enHint:'*Past passive uses **is** + ge- + **deur**.*', expected:'Die kind is deur die redders gehelp.', wrong:'Verlede tyd lydend: **is** + ge- + **deur**.'},
+      {type:'transform', dir:'toPassive', af:'Die span het die strande skoongemaak.', enHint:'*Use **is** and past participle.*', expected:'Die strande is deur die span skoongemaak.', wrong:'Gebruik **is** + ge- vorm.'},
+      {type:'transform', dir:'toPassive', af:'Die meisies het roomys gedeel.', enHint:'*Object first; **is** + ge- + **deur**.*', expected:'Die roomys is deur die meisies gedeel.', wrong:'Voorwerp word onderwerp; **is** … **deur** …'},
+
+      // --- TRANSFORM: Active -> Passive (future)
+      {type:'transform', dir:'toPassive', af:'Die onderwyser sal die reëls verduidelik.', enHint:'*Future passive: **sal** + past participle + **word** + **deur**.*', expected:'Die reëls sal deur die onderwyser verduidelik word.', wrong:'Toekomende tyd lydend: **sal … verduidelik word** + **deur**.'},
+      {type:'transform', dir:'toPassive', af:'Die kinders sal die vullis optel.', enHint:'*Use **sal** … **word** + **deur**.*', expected:'Die vullis sal deur die kinders opgetel word.', wrong:'Onthou **sal** + ge- + **word** + **deur**.'},
+
+      // --- TRANSFORM: Passive -> Active
+      {type:'transform', dir:'toActive', af:'Die bal word deur Pieter gegooi.', enHint:'*Make the doer the subject; remove **deur** and use present simple.*', expected:'Pieter gooi die bal.', wrong:'Bedrywende: Onderwerp doen self die aksie: **Pieter gooi die bal**.'},
+      {type:'transform', dir:'toActive', af:'Die vlieër is deur Laila gemaak.', enHint:'*Change to past active: the maker becomes subject.*', expected:'Laila het die vlieër gemaak.', wrong:'Verlede tyd bedrywende: **het** + ge-.'},
+
+      // --- Multiple choice identify
+      {type:'mcq', q:'Kies die **bedrywende vorm**.', enHint:'*Active = subject does the action.*', options:['Die sambreel word deur die wind gebuig.','Die wind buig die sambreel.','Die sambreel is deur die wind gebuig.'], correct:1, explain:'Bedrywende: **Die wind** (onderwerp) **buig** (werkwoord) **die sambreel** (voorwerp).'},
+      {type:'mcq', q:'Kies die **lydende vorm**.', enHint:'*Passive = subject receives the action.*', options:['Die seun vang die vis.','Die vis word deur die seun gevang.','Die seun het die vis gevang.'], correct:1, explain:'Lydend: **Die vis** ontvang die aksie; **word** … **deur** … **gevang**.'},
+      {type:'mcq', q:'Watter sin is **lydend** in die verlede tyd?', enHint:'*Look for **is** + ge- + deur.*', options:['Die handdoeke is deur Ouma gewas.','Ouma was die handdoeke.','Ouma het die handdoeke gewas.'], correct:0, explain:'Verlede tyd lydend: **is** + ge- + **deur**.'},
+      {type:'mcq', q:'Kies die korrekte **toekomende tyd lydend**.', enHint:'*Future passive: **sal** + ge- + **word** + **deur**.*', options:['Die koeler sal deur ons gedra word.','Die koeler word deur ons gedra.','Ons dra die koeler.'], correct:0, explain:'Toekomende tyd lydend: **sal … gedra word** + **deur**.'},
+
+      // --- True/False
+      {type:'tf', s:'“Die sambreel word deur Mia gehou.” is lydend.', enHint:'*Does the subject receive the action?*', answer:true, explain:'Ja, die sambreel ontvang die aksie (gehou word).'},
+      {type:'tf', s:'“Die son brand die sand.” is lydend.', enHint:'*Active = subject acts.*', answer:false, explain:'Nee, dit is bedrywend: **Die son** doen die aksie.'},
+      {type:'tf', s:'“Die ysies is deur die kinders geëet.” is verlede tyd lydend.', enHint:'*Past passive uses **is** + ge-.*', answer:true, explain:'Korrekt: **is** + ge- + **deur**.'},
+
+      // --- Fill-in (short)
+      {type:'fill', q:'Vul in: Die vis ____ deur die kind gevang.', enHint:'*Present passive needs **word**.*', answer:['word'], explain:"Teenwoordige tyd lydend gebruik 'word'."},
+      {type:'fill', q:'Vul in: Die handdoek ___ deur die wind weggewaai.', enHint:'*Past passive uses **is**.*', answer:['is'], explain:"Verlede tyd lydend gebruik 'is'."},
+      {type:'fill', q:'Vul in: Die koeler sal deur hulle gedra ____.', enHint:'*Future passive ends with **word**.*', answer:['word'], explain:"Toekomende tyd lydend eindig met 'word'."},
+      {type:'fill', q:'Skryf die ontbrekende woord: Die bal word ___ die seun gegooi.', enHint:'*Use the word that introduces the doer.*', answer:['deur'], explain:"Gebruik **deur** om die doeners in te lei."},
+
+      // --- Transform (more practice themed)
+      {type:'transform', dir:'toPassive', af:'Hulle eet waatlemoen by die strand.', enHint:'*Object first; use **word** + **deur**.*', expected:'Waatlemoen word deur hulle by die strand geëet.', wrong:'Plaas “Waatlemoen” eerste en gebruik **word**.'},
+      {type:'transform', dir:'toActive', af:'Die sambrele word deur die wind omgestoot.', enHint:'*Make the doer subject (wind). Present active.*', expected:'Die wind stoot die sambrele om.', wrong:'Onderwerp moet die aksie doen: **Die wind stoot …**'},
+
+      // --- Categorise Drag & Drop (set 1)
+      {type:'dnd', items:[
+        'Die meisie eet ’n roomys.',
+        'Die roomys word deur die meisie geëet.',
+        'Die vlieër is deur Oupa gebou.',
+        'Oupa bou ’n vlieër.'
+      ], enHint:'*Drag to Active (Bedrywend) if subject acts; Passive (Lydend) if subject receives.*', targets:{Bedrywende:['Die meisie eet ’n roomys.','Oupa bou ’n vlieër.'], Lydende:['Die roomys word deur die meisie geëet.','Die vlieër is deur Oupa gebou.']}, explain:'Bedrywende: onderwerp doen. Lydende: onderwerp ontvang + **word/is** + **deur**.'},
+
+      // --- Categorise Drag & Drop (set 2)
+      {type:'dnd', items:[
+        'Die seun blaas die opblaasboot op.',
+        'Die opblaasboot word deur die seun opgeblaas.',
+        'Die handdoeke is deur Ma opgetel.',
+        'Ma tel die handdoeke op.'
+      ], enHint:'*Sort each sentence to the correct bucket.*', targets:{Bedrywende:['Die seun blaas die opblaasboot op.','Ma tel die handdoeke op.'], Lydende:['Die opblaasboot word deur die seun opgeblaas.','Die handdoeke is deur Ma opgetel.']}, explain:'Herken **word/is** + **deur** vir lydend.'},
+
+      // --- Multiple choice (choose correct passive rewrite)
+      {type:'mcq', q:'Kies die korrekte lydende vorm: “Die lifeguard red die swemmer.”', enHint:'*Make “swemmer” subject; use **word** + **deur**.*', options:[
+        'Die swemmer word deur die lifeguard gered.',
+        'Die swemmer is deur die lifeguard red.',
+        'Die swemmer sal deur die lifeguard red word.'
+      ], correct:0, explain:'Teenwoordige tyd: **word** + ge- + **deur**.'},
+      {type:'mcq', q:'Kies die korrekte bedrywende vorm: “Die hangmat is deur Oupa opgespan.”', enHint:'*Past active uses **het** + ge-.*', options:[
+        'Oupa het die hangmat opgespan.',
+        'Oupa span die hangmat op.',
+        'Die hangmat word deur Oupa opgespan.'
+      ], correct:0, explain:'Verlede bedrywend: **het** + ge-.'},
+
+      // --- Fill more
+      {type:'fill', q:'Vul die twee woorde in: Die sambreel ___ ___ die wind gebreek.', enHint:'*Past passive uses two words before the participle.*', answer:[['is','deur'],['deur','is']], explain:'Antwoord moet **is** en **deur** bevat (volgorde kan wissel).'},
+      {type:'fill', q:'Vul in: Die kaarte sal deur ons gedeel ____.', enHint:'*Future passive ends with one key word.*', answer:['word'], explain:'Toekomende lydend eindig met **word**.'},
+
+      // --- True/False
+      {type:'tf', s:'“Die koelkas word deur my broer gedra.” is teenwoordige tyd lydend.', enHint:'*Present passive uses **word**.*', answer:true, explain:'Ja, **word** dui teenwoordige lydend aan.'},
+      {type:'tf', s:'“Die kinders het die sandkasteel gebou.” is lydend.', enHint:'*Active vs passive check.*', answer:false, explain:'Dit is bedrywend: kinders (onderwerp) bou.'},
+
+      // --- Transform tidy
+      {type:'transform', dir:'toPassive', af:'Die branders spoel die skulpe uit.', enHint:'*Make “skulpe” the subject.*', expected:'Die skulpe word deur die branders uitgespoel.', wrong:'Gebruik **word** en skuif “skulpe” voor.'},
+      {type:'transform', dir:'toActive', af:'Die koelhouer sal deur hulle gedra word.', enHint:'*Future active: subject first, **sal** + verb.*', expected:'Hulle sal die koelhouer dra.', wrong:'Toekomend bedrywend: **Hulle sal …** (sonder **deur**).'},
+
+      // --- MCQ quick picks
+      {type:'mcq', q:'Watter een is bedrywend?', enHint:'*Subject does action.*', options:['Die son brand die vel.','Die vel word deur die son gebrand.'], correct:0, explain:'Onderwerp **son** doen die aksie.'},
+      {type:'mcq', q:'Watter een is lydend?', enHint:'*Look for **word/is** + **deur**.*', options:['Die handdoek word deur die wind weggewaai.','Die wind waai die handdoek weg.'], correct:0, explain:'Lydend het merkers **word/is** + **deur**.'},
+
+      // --- Fill tiny
+      {type:'fill', q:'Vul in: Die koelhouer ___ deur Pappa gekoop.', enHint:'*Which verb marks past passive?*', answer:['is'], explain:'Verlede lydend gebruik **is**.'},
+
+      // --- Grand finale transform
+      {type:'transform', dir:'toPassive', af:'Die span sal môre die strand skoonmaak.', enHint:'*Future passive: **sal** + participle + **word** + **deur**.*', expected:'Die strand sal môre deur die span skoon gemaak word.', wrong:'Onthou **sal … skoon gemaak word** + **deur**. (Ruimte tussen skoon en gemaak aanvaar.)'},
+    ];
+
+    // Ensure exactly 30
+    if(questions.length !== 30){console.warn('Questions count =', questions.length)}
+
+    function init(){renderLives(); renderQuestion();}
+
+    function renderLives(){const wrap=$('#lives'); wrap.innerHTML=''; for(let i=0;i<state.lives;i++){const iEl=document.createElement('i'); wrap.appendChild(iEl)}}
+
+    function updateHUD(){$('#score').textContent=state.score; $('#streak').textContent=state.streak; $('#bar').style.width=((state.idx)/questions.length*100)+'%'}
+
+    function renderQuestion(){updateHUD(); if(state.idx>=questions.length){return endScreen()} const q=questions[state.idx]; const c=$('#card'); c.innerHTML='';
+      const head=document.createElement('div'); head.innerHTML=`<h2>Vraag ${state.idx+1} van ${questions.length}</h2>`; c.appendChild(head);
+      const hint=document.createElement('div'); hint.className='hint'; hint.innerHTML = (q.type==='transform'?
+        (q.dir==='toPassive'?'<b>Opdrag:</b> Skryf in <u>lydende vorm</u>. ':'<b>Opdrag:</b> Skryf in <u>bedrywende vorm</u>. '): '') + (q.enHint||'');
+      c.appendChild(hint);
+
+      const area=document.createElement('div'); area.className='q-area'; c.appendChild(area);
+
+      if(q.type==='transform') renderTransform(q, area);
+      if(q.type==='mcq') renderMCQ(q, area);
+      if(q.type==='tf') renderTF(q, area);
+      if(q.type==='fill') renderFill(q, area);
+      if(q.type==='dnd') renderDND(q, area);
+    }
+
+    function normalize(s){return s.toLowerCase().replaceAll(/[\s]+/g,' ').replaceAll('’',"'").trim()}
+
+    function next(){state.idx++; renderQuestion()}
+
+    function correct(msg='Korrekt! 🌊'){
+      state.score+=10; state.streak++; SFX.correct(); Confetti.burst(); toast('+10 punte!'); showFeedback(msg, true)
+    }
+    function wrong(msg='O nee! Probeer weer!'){
+      state.streak=0; state.lives--; renderLives(); SFX.wrong(); showFeedback(msg, false); if(state.lives<=0){setTimeout(endScreen, 400)}
+    }
+
+    function showFeedback(text, good){const fb=document.createElement('div'); fb.className='feedback'+(good?'':' bad'); fb.innerHTML=text + (good?'<div class="muted">Klik <b>Volgende</b> om aan te gaan.</div>':''); $('#card').appendChild(fb); const controls=document.createElement('div'); controls.className='center'; controls.style.marginTop='12px'; const btn=document.createElement('button'); btn.className='btn'; btn.textContent='Volgende ➜'; btn.onclick=()=>{SFX.click(); next()}; controls.appendChild(btn); $('#card').appendChild(controls)}
+
+    /* Renderers */
+    function renderTransform(q, area){
+      const p=document.createElement('p'); p.textContent=q.af; area.appendChild(p);
+      const input=document.createElement('input'); input.type='text'; input.placeholder='Tik jou sin hier in …'; area.appendChild(input);
+      const row=document.createElement('div'); row.className='center'; row.style.marginTop='12px';
+      const btn=document.createElement('button'); btn.className='btn'; btn.textContent='Beantwoord'; btn.onclick=()=>{
+        const user=input.value.trim(); if(!user){toast('Tik eers ’n antwoord.'); return}
+        const u=normalize(user);
+        let exp = normalize(q.expected);
+        // allow small spacing variant for skoon gemaak
+        exp = exp.replace('skoon gemaak','skoon gemaak');
+        if(u===exp){correct(`<b>Mooi!</b> Jou antwoord: ${user}`)} else {
+          wrong(`<b>Nee.</b> ${q.wrong}<br><div class=\"muted\">Modelantwoord: “${q.expected}”</div>`)
+        }
+      };
+      row.appendChild(btn); area.appendChild(row);
+    }
+
+    function renderMCQ(q, area){
+      const p=document.createElement('p'); p.textContent=q.q; area.appendChild(p);
+      q.options.forEach((opt, i)=>{
+        const b=document.createElement('button'); b.className='option'; b.textContent=opt; b.onclick=()=>{
+          if(i===q.correct){correct('<b>Reg!</b> '+q.explain)} else {wrong('<b>Verkeerd.</b> '+q.explain)}
+        }; area.appendChild(b)
+      })
+    }
+
+    function renderTF(q, area){
+      const p=document.createElement('p'); p.textContent=q.s; area.appendChild(p);
+      const row=document.createElement('div'); row.className='center';
+      const bt=document.createElement('button'); bt.className='btn secondary'; bt.textContent='Waar'; bt.onclick=()=>{ if(q.answer){correct('<b>Korrekt.</b> '+q.explain)} else {wrong('<b>Nee.</b> '+q.explain)} };
+      const bf=document.createElement('button'); bf.className='btn'; bf.textContent='Vals'; bf.onclick=()=>{ if(!q.answer){correct('<b>Korrekt.</b> '+q.explain)} else {wrong('<b>Nee.</b> '+q.explain)} };
+      row.append(bt,bf); area.appendChild(row);
+    }
+
+    function renderFill(q, area){
+      const p=document.createElement('p'); p.textContent=q.q; area.appendChild(p);
+      const input=document.createElement('input'); input.type='text'; input.placeholder='Tik die woord(e) in …'; area.appendChild(input);
+      const row=document.createElement('div'); row.className='center'; row.style.marginTop='12px';
+      const btn=document.createElement('button'); btn.className='btn'; btn.textContent='Beantwoord'; btn.onclick=()=>{
+        const v=normalize(input.value);
+        const answers = Array.isArray(q.answer[0]) ? q.answer.map(arr=>arr.map(normalize)) : q.answer.map? q.answer.map(normalize) : [normalize(q.answer)];
+        let ok=false;
+        if(Array.isArray(answers[0])){ // multi-token any order
+          const tokens=v.split(' ');
+          ok = answers.some(arr=> arr.every(tok=>tokens.includes(tok)) && tokens.length===arr.length);
+        } else {
+          ok = answers.includes(v);
+        }
+        if(ok){correct('<b>Mooi!</b> '+q.explain)} else {wrong('<b>Nie heeltemal nie.</b> '+q.explain)}
+      };
+      row.appendChild(btn); area.appendChild(row);
+    }
+
+    function renderDND(q, area){
+      const info=document.createElement('div'); info.innerHTML='<b>Sleep en los:</b> Plaas elke sin by die regte emmer.'; area.appendChild(info);
+      const wrap=document.createElement('div'); wrap.className='dnd-wrap'; area.appendChild(wrap);
+      const left=document.createElement('div'); left.className='bucket'; left.innerHTML='<div class="label">Bedrywende vorm</div>'; wrap.appendChild(left);
+      const right=document.createElement('div'); right.className='bucket'; right.innerHTML='<div class="label">Lydende vorm</div>'; wrap.appendChild(right);
+      const pool=document.createElement('div'); pool.className='bucket'; pool.style.gridColumn='1 / -1'; pool.innerHTML='<div class="label">Sleep van hier af</div>'; area.appendChild(pool);
+
+      // create chips
+      q.items.forEach(text=>{const chip=document.createElement('span'); chip.className='chip'; chip.textContent=text; chip.draggable=true; pool.appendChild(chip)});
+
+      ;[left,right,pool].forEach(b=>{
+        b.ondragover = e=>{e.preventDefault(); b.style.background='#f6fffe'};
+        b.ondragleave = ()=> b.style.background='#fff';
+        b.ondrop = e=>{e.preventDefault(); const id=e.dataTransfer.getData('text/chip'); const el=document.getElementById(id); if(el) b.appendChild(el); b.style.background='#fff'}
+      });
+
+      $$('.chip', pool).forEach((chip,i)=>{
+        chip.id='chip'+i; chip.ondragstart = e=>{e.dataTransfer.setData('text/chip', chip.id)}
+      });
+
+      const row=document.createElement('div'); row.className='center'; row.style.marginTop='12px';
+      const btn=document.createElement('button'); btn.className='btn'; btn.textContent='Gereed!'; btn.onclick=()=>{
+        // check
+        const bed=$$('.chip', left).map(el=>el.textContent.trim());
+        const lyd=$$('.chip', right).map(el=>el.textContent.trim());
+        const ok1 = arrayEq(new Set(bed), new Set(q.targets.Bedrywende));
+        const ok2 = arrayEq(new Set(lyd), new Set(q.targets.Lydende));
+        if(ok1 && ok2){correct('<b>Perfek!</b> '+q.explain)} else {wrong('<b>Byna!</b> '+q.explain)}
+      };
+      row.appendChild(btn); area.appendChild(row);
+
+      const hint=document.createElement('div'); hint.className='hint'; hint.style.marginTop='8px'; hint.textContent=q.enHint; area.appendChild(hint);
+    }
+
+    function arrayEq(aSet, bArr){ if(aSet.size!==bArr.length) return false; for(const v of bArr){ if(!aSet.has(v)) return false } return true }
+
+    function endScreen(){
+      const c=$('#card'); c.innerHTML='';
+      const total=questions.length*10; const pct=Math.round(state.score/total*100);
+      const medal = pct>=90?'🥇': pct>=70?'🥈': pct>=50?'🥉':'🏅';
+      c.innerHTML = `
+        <h2>🏁 Eindpunt – Perfekte Golf!</h2>
+        <p>Jou punt: <b>${state.score}</b> / ${total} (${pct}%).</p>
+        <div class="medal">${medal}</div>
+        <p class="muted">Speel weer om ’n hoër streep en medalje te kry!</p>
+      `;
+      const row=document.createElement('div'); row.className='center';
+      const again=document.createElement('button'); again.className='btn'; again.textContent='Speel weer'; again.onclick=()=>{SFX.click(); state.idx=0; state.score=0; state.streak=0; state.lives=3; renderLives(); renderQuestion();}
+      const share=document.createElement('button'); share.className='btn secondary'; share.textContent='Wys my antwoorde'; share.onclick=()=>showAnswers();
+      row.append(again,share); c.appendChild(row);
+
+      const tip=document.createElement('div'); tip.className='feedback'; tip.style.marginTop='12px'; tip.innerHTML='<b>Wenk:</b> <i>Practice makes permanent.</i> Oefen die patrone: <b>word/is + deur + ge-</b> (lydend) en onthou: in die bedrywende vorm doen die <b>onderwerp</b> self die aksie.';
+      c.appendChild(tip);
+    }
+
+    function showAnswers(){
+      const out = questions.map((q,i)=>{
+        if(q.type==='transform') return `${i+1}. ${q.af} → <b>${q.expected}</b>`;
+        if(q.type==='mcq') return `${i+1}. ${q.q} → <b>${q.options[q.correct]}</b>`;
+        if(q.type==='tf') return `${i+1}. ${q.s} → <b>${q.answer? 'Waar':'Vals'}</b>`;
+        if(q.type==='fill') return `${i+1}. ${q.q} → <b>${Array.isArray(q.answer)? (Array.isArray(q.answer[0])? q.answer[0].join(' & ') : q.answer.join(' / ')) : q.answer}</b>`;
+        if(q.type==='dnd') return `${i+1}. DnD: Bedrywende → <b>${q.targets.Bedrywende.join(' | ')}</b> | Lydende → <b>${q.targets.Lydende.join(' | ')}</b>`;
+      }).join('<br>');
+      const fb=document.createElement('div'); fb.className='feedback'; fb.innerHTML=out; $('#card').appendChild(fb)
+    }
+
+    init();
+  </script>
+</body>
+</html>
